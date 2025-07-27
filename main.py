@@ -2,20 +2,20 @@ import feedparser
 import tweepy
 import os
 
-# 🔐 環境変数からAPIキーを読み込む（GitHubの秘密設定に保存する予定）
-API_KEY = os.environ['API_KEY']
-API_SECRET = os.environ['API_SECRET']
-ACCESS_TOKEN = os.environ['ACCESS_TOKEN']
-ACCESS_TOKEN_SECRET = os.environ['ACCESS_TOKEN_SECRET']
+# Twitter API v2 ベアラートークン認証
+client = tweepy.Client(
+    consumer_key=os.environ['API_KEY'],
+    consumer_secret=os.environ['API_SECRET'],
+    access_token=os.environ['ACCESS_TOKEN'],
+    access_token_secret=os.environ['ACCESS_TOKEN_SECRET']
+)
 
-# 🐤 Twitter認証
-auth = tweepy.OAuth1UserHandler(API_KEY, API_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
-api = tweepy.API(auth)
-
-# 📰 YahooニュースRSSから記事を取得
+# Yahooニュース RSSを取得
 feed = feedparser.parse("https://news.yahoo.co.jp/rss/topics/top-picks.xml")
-entry = feed.entries[0]  # 一番上の記事を使う
+entry = feed.entries[0]  # 一番上の記事だけ
 
-# 📝 ツイート文を作って投稿
+# ツイートを投稿（v2方式）
 tweet = f"{entry.title}\n{entry.link}"
-api.update_status(tweet)
+response = client.create_tweet(text=tweet)
+
+print("✅ Tweeted:", response)
